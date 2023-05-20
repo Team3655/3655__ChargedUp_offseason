@@ -8,183 +8,206 @@ import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderStatusFrame;
 import com.ctre.phoenix.sensors.SensorInitializationStrategy;
-
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController.AccelStrategy;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
-import frc.robot.Constants.ModuleConstants;
+import frc.robot.Constants.BaseModuleConstants;
+import frc.robot.TractorToolbox.SparkMaxMaker;
 import frc.robot.TractorToolbox.TractorParts.PIDGains;
 
 public class SwerveModule {
-	/** Creates a new SwerveModule. */
 
-	private final CANSparkMax driveMotor;
-	private final CANSparkMax turningMotor;
+	private final CANSparkMax turnMotor;
+	private final CANSparkMax leaderDriveMotor;
+	private final CANSparkMax followerDriveMotor;
 
 	private final CANCoder absoluteEncoder;
+
 	private final RelativeEncoder driveEncoder;
+	private final RelativeEncoder turnEncoder;
+	// private final AbsoluteEncoder throughBore;
 
 	private final SparkMaxPIDController drivePID;
-	private final ProfiledPIDController m_turningPIDController;
+	private final SparkMaxPIDController turnPID;
 
-	public final double angleZero;
+	private final double angleZeroOffset;
 
 	private final String moduleName;
 
-	SimpleMotorFeedforward turnFeedForward = new SimpleMotorFeedforward(
-			ModuleConstants.ksTurning, ModuleConstants.kvTurning);
+	private SwerveModuleState optimizedState;
 
+	/** Creates a new SwerveModule. */
 	public SwerveModule(
 			String moduleName,
-			int driveMotorChannel,
-			int turningMotorChannel,
-			int absoluteEncoderPort,
-			double angleZero,
-			PIDGains angularPID,
-			PIDGains drivePID) {
+			int turningMotorID,
+			int leaderDriveMotorID,
+			int followerDriveMotorID,
+			int absoluteEncoderID,
+			double angleZeroOffset,
+			PIDGains angularPIDGains,
+			PIDGains drivePIDGains) {
 
 		this.moduleName = moduleName;
-		this.angleZero = angleZero;
-
-		// Initialize the motors
-		driveMotor = new CANSparkMax(driveMotorChannel, MotorType.kBrushless);
-		turningMotor = new CANSparkMax(turningMotorChannel, MotorType.kBrushless);
-
-		driveMotor.setInverted(true);
-		turningMotor.setInverted(true);
-
-		turningMotor.restoreFactoryDefaults();
-		driveMotor.restoreFactoryDefaults();
-
-		turningMotor.setInverted(true);
-		// driveMotor.setInverted(true);
+		this.angleZeroOffset = angleZeroOffset;
+		optimizedState = new SwerveModuleState();
 
 		// Initalize CANcoder
-		absoluteEncoder = new CANCoder(absoluteEncoderPort, Constants.kCanivoreCANBusName);
-		Timer.delay(1);
+		absoluteEncoder = new CANCoder(absoluteEncoderID, Constants.kCTRECANBusName);
 		absoluteEncoder.configFactoryDefault();
 		absoluteEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition);
 		absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
-		absoluteEncoder.configMagnetOffset(-1 * angleZero);
 		absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10, 100);
 		absoluteEncoder.clearStickyFaults();
+		Timer.delay(.1);
 
-		driveEncoder = driveMotor.getEncoder();
-		driveEncoder.setPositionConversionFactor(ModuleConstants.kdriveGearRatio * ModuleConstants.kwheelCircumference); // meters
-		driveMotor.getEncoder().setVelocityConversionFactor(
-				ModuleConstants.kdriveGearRatio
-						* ModuleConstants.kwheelCircumference
+		// Initialize the motors
+		// Initialize turning motor, encoder, and PID
+		// Turn Motor
+		turnMotor = SparkMaxMaker.createSparkMax(turningMotorID);
+		turnMotor.setInverted(true);
+		turnMotor.setIdleMode(IdleMode.kBrake);
+		turnMotor.setSmartCurrentLimit(BaseModuleConstants.kTurnMotorCurrentLimit);
+		// Turn Encoder
+		turnEncoder = turnMotor.getEncoder();
+		turnEncoder.setPositionConversionFactor((2 * Math.PI) * BaseModuleConstants.kturnGearRatio); // radians
+		turnEncoder.setVelocityConversionFactor((2 * Math.PI) * BaseModuleConstants.kturnGearRatio * (1d / 60d)); // radians per second
+		turnEncoder.setPosition(Units.degreesToRadians(absoluteEncoder.getAbsolutePosition() - angleZeroOffset));
+		// Turn PID
+		turnPID = turnMotor.getPIDController();
+		turnPID.setP(angularPIDGains.kP);
+		turnPID.setI(angularPIDGains.kI);
+		turnPID.setD(angularPIDGains.kD);
+		turnPID.setPositionPIDWrappingEnabled(true);
+		turnPID.setPositionPIDWrappingMinInput(-Math.PI);
+		turnPID.setPositionPIDWrappingMaxInput(Math.PI);
+
+		// Leader Drive Motor
+		leaderDriveMotor = SparkMaxMaker.createSparkMax(leaderDriveMotorID);
+		leaderDriveMotor.setIdleMode(IdleMode.kBrake);
+		leaderDriveMotor.setSmartCurrentLimit(BaseModuleConstants.kDriveMotorCurrentLimit);
+		// Leader Drive Encoder
+		driveEncoder = leaderDriveMotor.getEncoder();
+		driveEncoder.setPositionConversionFactor(
+				BaseModuleConstants.kdriveGearRatio * BaseModuleConstants.kwheelCircumference); // meters
+		driveEncoder.setVelocityConversionFactor(
+				BaseModuleConstants.kdriveGearRatio
+						* BaseModuleConstants.kwheelCircumference
 						* (1d / 60d)); // meters per second
 
-		// Initialize PID's
-		this.drivePID = driveMotor.getPIDController();
-		this.drivePID.setP(drivePID.kP);
-		this.drivePID.setI(drivePID.kI);
-		this.drivePID.setD(drivePID.kD);
+		// Leader Drive PID
+		drivePID = leaderDriveMotor.getPIDController();
+		drivePID.setP(drivePIDGains.kP);
+		drivePID.setI(drivePIDGains.kI);
+		drivePID.setD(drivePIDGains.kD);
+		drivePID.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+		drivePID.setSmartMotionMaxAccel(3, 0);
+		drivePID.setSmartMotionMaxVelocity(5, 0);
+		drivePID.setSmartMotionAllowedClosedLoopError(.03, 0);
+		drivePID.setFF(BaseModuleConstants.kDriveFeedForward);
 
-		m_turningPIDController = new ProfiledPIDController(
-			angularPID.kP,
-			angularPID.kI,
-			angularPID.kD,
-			new TrapezoidProfile.Constraints( // radians/s?
-					2 * Math.PI * 600, // theoretical is 5676 RPM -> 94*2pi
-					2 * Math.PI * 1200));
+		// Follower Drive Motor
+		followerDriveMotor = SparkMaxMaker.createSparkMax(followerDriveMotorID);
+		followerDriveMotor.follow(leaderDriveMotor, true);
+		followerDriveMotor.setSmartCurrentLimit(35);
 
-		this.drivePID.setFF(ModuleConstants.kDriveFeedForward);
+		// throughBore = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
+		// throughBore.setPositionConversionFactor((2 * Math.PI));
 
-		this.drivePID.setFeedbackDevice(driveMotor.getEncoder());
-
-		this.drivePID.setOutputRange(-1, 1);
-
-		// Configure current limits for motors
-		driveMotor.setIdleMode(IdleMode.kBrake);
-		turningMotor.setIdleMode(IdleMode.kBrake);
-		turningMotor.setSmartCurrentLimit(ModuleConstants.kTurnMotorCurrentLimit);
-		driveMotor.setSmartCurrentLimit(ModuleConstants.kDriveMotorCurrentLimit);
-
-		m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
-
-		SmartDashboard.putNumber(this.moduleName + " Offset", angleZero);
-		SmartDashboard.putString(this.moduleName + " Abs. Status", absoluteEncoder.getLastError().toString());
+		// turnPID.setFeedbackDevice(throughBore);
 	}
 
 	// Returns headings of the module
-	public double getAbsoluteHeading() {
-		return absoluteEncoder.getAbsolutePosition();
+
+	/** returns the current heading of the module in radians */
+	public double getHeading() {
+		return turnEncoder.getPosition();  // % Math.PI;
 	}
+
+	/** returns the current heading of the module from the absolute encoder in radians */
+	public double getAbsoluteHeading() {
+		return absoluteEncoder.getAbsolutePosition() - angleZeroOffset;
+	}
+
 
 	public double getDistanceMeters() {
 		return driveEncoder.getPosition();
 	}
 
+	/** returns the error from the current angle to optimized angle of the module in radians */
+	public double getAngleError() {
+		return optimizedState.angle.getRadians() - getHeading();
+	}
+
 	// Returns current position of the modules
 	public SwerveModulePosition getPosition() {
 
-		double m_moduleAngleRadians = Math.toRadians(absoluteEncoder.getAbsolutePosition());
+		double moduleAngleRadians = getHeading();
 
-		double m_distanceMeters = driveEncoder.getPosition();
+		double distanceMeters = driveEncoder.getPosition();
 
-		return new SwerveModulePosition(m_distanceMeters, new Rotation2d(m_moduleAngleRadians));
+		return new SwerveModulePosition(distanceMeters, new Rotation2d(moduleAngleRadians));
 	}
 
+	// region: Setters
 	public void setDesiredState(SwerveModuleState desiredState) {
-
-		double m_moduleAngleRadians = Math.toRadians(absoluteEncoder.getAbsolutePosition());
-
-		// Optimize the reference state to avoid spinning further than 90 degrees to
-		// desired state
-		SwerveModuleState optimizedState = SwerveModuleState.optimize(
-				desiredState,
-				new Rotation2d(m_moduleAngleRadians));
-
-		final var angularPIDOutput = m_turningPIDController.calculate(m_moduleAngleRadians,
-				optimizedState.angle.getRadians());
-
-		final var angularFFOutput = turnFeedForward.calculate(m_turningPIDController.getSetpoint().velocity);
-
-		final var turnOutput = angularPIDOutput + angularFFOutput;
-
-		turningMotor.setVoltage(turnOutput);
-
-		drivePID.setReference(
-				optimizedState.speedMetersPerSecond,
-				ControlType.kVelocity);
-
-		SmartDashboard.putNumber(this.moduleName + " Optimized Angle", optimizedState.angle.getDegrees());
-		SmartDashboard.putNumber(this.moduleName + " PID", angularPIDOutput);
-		SmartDashboard.putNumber(this.moduleName + " Turn Output", turnOutput);
-
+		setDesiredState(desiredState, false);
 	}
 
-	public void resetEncoders() {
-		Timer.delay(.1);
-		absoluteEncoder.configFactoryDefault();
-		Timer.delay(.1);
-		absoluteEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition);
-		Timer.delay(.1);
-		absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
-		Timer.delay(.1);
-		absoluteEncoder.configMagnetOffset(-1 * angleZero);
-		Timer.delay(.1);
-		absoluteEncoder.clearStickyFaults();
+	public void setDesiredState(SwerveModuleState desiredState, boolean isTurbo) {
+
+		double moduleAngleRadians = getHeading();
+
+		// Optimize the reference state to avoid spinning further than 90 degrees to the
+		// desired state
+		optimizedState = SwerveModuleState.optimize(
+				desiredState,
+				new Rotation2d(moduleAngleRadians));
+
+		if (isTurbo) {
+			// Squeeze every last bit if power out of turbo
+			leaderDriveMotor.setVoltage(12 * Math.signum(optimizedState.speedMetersPerSecond));
+			drivePID.setIAccum(0);
+		} else {
+			drivePID.setReference(
+					optimizedState.speedMetersPerSecond,
+					ControlType.kSmartVelocity);
+		}
+
+		turnPID.setReference(
+				optimizedState.angle.getRadians(),
+				ControlType.kPosition);
 	}
 
 	public void stopMotors() {
-		driveMotor.stopMotor();
-		turningMotor.stopMotor();
+		leaderDriveMotor.stopMotor();
+		turnMotor.stopMotor();
 	}
+
+	public void updateTelemetry() {
+		SmartDashboard.putNumber(moduleName + " Angle Error", Units.radiansToDegrees(getAngleError()));
+		// SmartDashboard.putNumber(moduleName + " ThroughBore Angle", Units.radiansToDegrees(throughBore.getPosition()));
+		SmartDashboard.putNumber(moduleName + " Offset", angleZeroOffset);
+		SmartDashboard.putString(moduleName + " Abs. Status", absoluteEncoder.getLastError().toString());
+		SmartDashboard.putNumber(moduleName + " Drive Current Draw", leaderDriveMotor.getOutputCurrent());
+		SmartDashboard.putNumber(moduleName + " Optimized Angle", optimizedState.angle.getDegrees());
+		SmartDashboard.putNumber(moduleName + " Turn Motor Output", turnMotor.getAppliedOutput());
+		SmartDashboard.putNumber(moduleName + " Target Velocity", optimizedState.speedMetersPerSecond);	
+		SmartDashboard.putNumber(moduleName + " Velocity", driveEncoder.getVelocity());
+		SmartDashboard.putNumber(moduleName + " SparkEncoder Angle",
+				Units.radiansToDegrees(getHeading()));
+	}
+
+	// endregion: setters
 
 }

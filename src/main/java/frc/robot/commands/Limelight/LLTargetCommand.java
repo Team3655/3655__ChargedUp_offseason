@@ -42,7 +42,7 @@ public class LLTargetCommand extends CommandBase {
 	@Override
 	public void execute() {
 		double turnOutput = LLTargetpidController.calculate(LimelightHelpers.getTX(""), 0);
-		driveSubsystem.drive(0, 0, turnOutput);
+		driveSubsystem.codeDrive(0, 0, turnOutput);
 	}
 
 	// Called once the command ends or is interrupted.

@@ -31,7 +31,7 @@ import frc.robot.commands.Autonomous.IntakeCommand;
  */
 public final class Constants {
 
-	public static class ModuleConstants {
+	public static class BaseModuleConstants {
 
 		// Current limits for the wheels
 		public static final int kTurnMotorCurrentLimit = 25;
@@ -54,10 +54,15 @@ public final class Constants {
 		public static final double ksTurning = .17161; // Tuned February 2, 2023
 
 		// NEO drive motor CAN ID's
-		public static final int kFrontLeftDriveMotorPort = 1;
-		public static final int kFrontRightDriveMotorPort = 2;
-		public static final int kRearLeftDriveMotorPort = 3;
-		public static final int kRearRightDriveMotorPort = 4;
+		public static final int kPrimaryFrontLeftDriveMotorPort = 1;
+		public static final int kPrimaryFrontRightDriveMotorPort = 2;
+		public static final int kPrimaryRearLeftDriveMotorPort = 3;
+		public static final int kPrimaryRearRightDriveMotorPort = 4;
+
+		public static final int kSecondaryFrontLeftDriveMotorPort = 21;
+		public static final int kSecondaryFrontRightDriveMotorPort = 22;
+		public static final int kSecondaryRearLeftDriveMotorPort = 23;
+		public static final int kSecondaryRearRightDriveMotorPort = 24;
 
 		// NEO turning motor CAN ID's
 		public static final int kFrontLeftTurningMotorPort = 5;
@@ -66,10 +71,11 @@ public final class Constants {
 		public static final int kRearRightTurningMotorPort = 8;
 
 		// CANcoder CAN ID's
-		public static final int kFrontLeftTurningEncoderPort = 9;
-		public static final int kFrontRightTurningEncoderPort = 10;
-		public static final int kRearLeftTurningEncoderPort = 11;
-		public static final int kRearRightTurningEncoderPort = 12;
+		public static final int kFrontLeftAbsoluteEncoderPort = 9;
+		public static final int kFrontRightAbsoluteEncoderPort = 10;
+		public static final int kRearLeftAbsoluteEncoderPort = 11;
+		public static final int kRearRightAbsoluteEncoderPort = 12;
+		
 
 		// Offset angle for absolute encoders (find this using CTRE client)
 		public static final double kFrontLeftAngleZero = 36.475;
@@ -77,9 +83,8 @@ public final class Constants {
 		public static final double kRearLeftAngleZero = 152.2;
 		public static final double kRearRightAngleZero = 60.47;
 
-		public static final PIDGains kModuleDriveGains = new PIDGains(.1, 0, 0);
-
-		public static final PIDGains kModuleTurningGains = new PIDGains(6.5, .25, .15);
+		public static final PIDGains kModuleDriveGains = new PIDGains(.15, 0, 0);
+		public static final PIDGains kModuleTurningGains = new PIDGains(1.5, 0, 0.0016);
 	}
 
 	public static class DriveConstants {
@@ -338,6 +343,6 @@ public final class Constants {
 
 	public static final String kRioCANBusName = "rio";
 
-	public static final String kCanivoreCANBusName = "canivore";
+	public static final String kCTRECANBusName = "canivore";
 
 }

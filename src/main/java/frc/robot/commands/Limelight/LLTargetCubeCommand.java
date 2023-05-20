@@ -64,10 +64,10 @@ public class LLTargetCubeCommand extends CommandBase {
 		if (LimelightHelpers.getTV("")) {
 
 			double strafePIDOutput = LLTargetpidController.calculate(LimelightHelpers.getTX(""), 0);
-			driveSubsystem.drive(.2, strafePIDOutput, 0);
+			driveSubsystem.codeDrive(.2, strafePIDOutput, 0);
 
 		} else {
-			driveSubsystem.drive(0, 0, 0);
+			driveSubsystem.codeDrive(0, 0, 0);
 		}
 	}
 

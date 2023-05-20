@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.Constants.ArmConstants.kArmPoses;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.TractorToolbox.JoystickUtils;
 import frc.robot.TractorToolbox.TractorParts.PathBuilder;
 import frc.robot.commands.ArmPoseCommand;
 import frc.robot.commands.ArmSwitchCommand;
@@ -182,17 +181,13 @@ public class RobotContainer {
 				new RunCommand(() -> driveSubsystem.robotCentricDrive(-0.05, 0, 0), driveSubsystem));
 
 		// Swerve Drive method is set as default for drive subsystem
-		driveSubsystem.setDefaultCommand(
+			driveSubsystem.setDefaultCommand(
 				new RunCommand(
-						() -> driveSubsystem.drive(
-								-JoystickUtils.processJoystickInput(driveJoystick.getY())
-										- JoystickUtils.processJoystickInput(programmerController.getLeftY()), // x axis
-								-JoystickUtils.processJoystickInput(driveJoystick.getX())
-										- JoystickUtils.processJoystickInput(programmerController.getLeftX()), // y axis
-								-JoystickUtils.processJoystickInput(turnJoystick.getX())
-										- JoystickUtils.processJoystickInput(programmerController.getRightX()), // rot
-																												// axis
-								driveJoystick.getHID().getRawButton(1), // turbo boolean
+						() -> driveSubsystem.driverDrive(
+								-driveJoystick.getY() - programmerController.getLeftY(), // x axis
+								-driveJoystick.getX() - programmerController.getLeftX(), // y axis
+								-turnJoystick.getX() - programmerController.getRightX(), // rot axis
+								driveJoystick.getHID().getRawButton(1) || programmerController.rightBumper().getAsBoolean(), // turbo boolean
 								driveJoystick.getHID().getRawButton(2)), // sneak boolean
 						driveSubsystem));
 		// endregion

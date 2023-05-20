@@ -55,14 +55,14 @@ public class BalanceCommand extends CommandBase {
 		}
 
 		// add strafe output here to have the robot strafe while balancing
-		driveSubsystem.drive(-driveOutput, 0, 0);
+		driveSubsystem.codeDrive(-driveOutput, 0, 0);
 	}
 
 	// Called once the command ends or is interrupted.
 	@Override
 	public void end(boolean interrupted) {
 		// turns the wheels when the command ends
-		driveSubsystem.drive(0, 0, 0.001);
+		driveSubsystem.codeDrive(0, 0, 0.001);
 	}
 
 	// Returns true when the command should end.
