@@ -10,15 +10,17 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.TractorToolbox.TractorParts.SwerveConstants;
+import frc.lib.TractorToolbox.TractorParts.SwerveModuleConstants;
 import frc.robot.Constants.ArmConstants.kArmPoses;
-import frc.robot.TractorToolbox.TractorParts.PIDGains;
+import frc.lib.TractorToolbox.TractorParts.PIDGains;
 import frc.robot.commands.ArmPoseCommand;
 import frc.robot.commands.ArmSwitchCommand;
+import frc.robot.commands.Autonomous.IntakeCommand;
 import frc.robot.commands.Autonomous.IntakeDownSequence;
 import frc.robot.commands.Autonomous.ScoreSequence;
 import frc.robot.commands.Limelight.LLAlignCommand;
 import frc.robot.commands.Limelight.LLTargetCubeCommand;
-import frc.robot.commands.Autonomous.IntakeCommand;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -31,60 +33,103 @@ import frc.robot.commands.Autonomous.IntakeCommand;
  */
 public final class Constants {
 
-	public static class BaseModuleConstants {
+	public static class ModuleConstants {
 
-		// Current limits for the wheels
-		public static final int kTurnMotorCurrentLimit = 25;
-		public static final int kDriveMotorCurrentLimit = 35;
-
-		// Constants set for the _SDS MK4i_
-		public static final double kdriveGearRatio = 1d / 6.75;
-		public static final double kturnGearRatio = 1d / (150d / 7d);
-
-		public static final double kwheelCircumference = Units.inchesToMeters(4) * Math.PI;
-
-		// The max speed the modules are capable of
-		public static final double kMaxModuleSpeedMetersPerSecond = Units.feetToMeters(14.5);
-
-		public static final double ksVolts = .1;
-		public static final double kDriveFeedForward = .2;
-
-		// TODO: Retune feedforward values for turning
-		public static final double kvTurning = .43205;
-		public static final double ksTurning = .17161; // Tuned February 2, 2023
-
-		// NEO drive motor CAN ID's
-		public static final int kPrimaryFrontLeftDriveMotorPort = 1;
-		public static final int kPrimaryFrontRightDriveMotorPort = 2;
-		public static final int kPrimaryRearLeftDriveMotorPort = 3;
-		public static final int kPrimaryRearRightDriveMotorPort = 4;
-
-		public static final int kSecondaryFrontLeftDriveMotorPort = 21;
-		public static final int kSecondaryFrontRightDriveMotorPort = 22;
-		public static final int kSecondaryRearLeftDriveMotorPort = 23;
-		public static final int kSecondaryRearRightDriveMotorPort = 24;
-
-		// NEO turning motor CAN ID's
-		public static final int kFrontLeftTurningMotorPort = 5;
-		public static final int kFrontRightTurningMotorPort = 6;
-		public static final int kRearLeftTurningMotorPort = 7;
-		public static final int kRearRightTurningMotorPort = 8;
-
-		// CANcoder CAN ID's
-		public static final int kFrontLeftAbsoluteEncoderPort = 9;
-		public static final int kFrontRightAbsoluteEncoderPort = 10;
-		public static final int kRearLeftAbsoluteEncoderPort = 11;
-		public static final int kRearRightAbsoluteEncoderPort = 12;
+		public static final boolean kUseThroughBore = false;
 		
 
-		// Offset angle for absolute encoders (find this using CTRE client)
-		public static final double kFrontLeftAngleZero = 36.475;
-		public static final double kFrontRightAngleZero = 121.641;
-		public static final double kRearLeftAngleZero = 152.2;
-		public static final double kRearRightAngleZero = 60.47;
 
-		public static final PIDGains kModuleDriveGains = new PIDGains(.15, 0, 0);
+		// gains set for R1 SDS mk4i using dual neo motors
+		public static final PIDGains kModuleDriveGains = new PIDGains(.15, 0.001, 0);
 		public static final PIDGains kModuleTurningGains = new PIDGains(1.5, 0, 0.0016);
+
+		public static final class GenericModuleConstants {
+			// Current limits for the wheels
+			public static final int kTurnMotorCurrentLimit = 25;
+			public static final int kDriveMotorCurrentLimit = 35;
+
+			// Constants set for the _SDS MK4i_
+			public static final double kTurnGearRatio = 1d / (150d / 7d);
+			public static final double kDriveGearRatio = 1d / 5.56;
+			public static final double kWheelCircumference = Units.inchesToMeters(4) * Math.PI;
+
+			// The max speeds the modules are capable of
+			public static final double kMaxModuleAccelMetersPerSecond = 4;
+			public static final double kMaxModuleSpeedMetersPerSecond = 5.6;
+
+			// Retune feedforward values for turning
+			// public static final double kvTurning = .43205;
+			// public static final double ksTurning = .17161; // Tuned February 2, 2023
+
+			public static final double kDriveFeedForward = .2;
+
+			public static final SwerveConstants kSwerveConstants = new SwerveConstants(
+				kTurnMotorCurrentLimit, 
+				kDriveMotorCurrentLimit, 
+				kTurnGearRatio, 
+				kDriveGearRatio, 
+				kWheelCircumference, 
+				kMaxModuleAccelMetersPerSecond, 
+				kMaxModuleSpeedMetersPerSecond, 
+				kDriveFeedForward);
+		}
+
+		// module specific constants
+		public static final class FrontLeftModule {
+			public static final int kTurningMotorID = 1;
+			public static final int kLeaderDriveMotorID = 5;
+			public static final int kFollowerDriveMotorID = 9;
+			public static final int kAbsoluteEncoderID = 13;
+			public static final double kAngleOffset = 35.508;
+			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
+					kAbsoluteEncoderID,
+					kTurningMotorID,
+					kLeaderDriveMotorID,
+					kFollowerDriveMotorID,
+					kAngleOffset);
+		}
+
+		public static final class FrontRightModule {
+			public static final int kTurningMotorID = 2;
+			public static final int kLeaderDriveMotorID = 6;
+			public static final int kFollowerDriveMotorID = 10;
+			public static final int kAbsoluteEncoderID = 14;
+			public static final double kAngleOffset = 0;
+			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
+					kAbsoluteEncoderID,
+					kTurningMotorID,
+					kLeaderDriveMotorID,
+					kFollowerDriveMotorID,
+					kAngleOffset);
+		}
+
+		public static final class BackLeftModule {
+			public static final int kTurningMotorID = 3;
+			public static final int kLeaderDriveMotorID = 7;
+			public static final int kFollowerDriveMotorID = 11;
+			public static final int kAbsoluteEncoderID = 15;
+			public static final double kAngleOffset = 0;
+			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
+					kAbsoluteEncoderID,
+					kTurningMotorID,
+					kLeaderDriveMotorID,
+					kFollowerDriveMotorID,
+					kAngleOffset);
+		}
+
+		public static final class BackRightModule {
+			public static final int kTurningMotorID = 4;
+			public static final int kLeaderDriveMotorID = 8;
+			public static final int kFollowerDriveMotorID = 12;
+			public static final int kAbsoluteEncoderID = 16;
+			public static final double kAngleOffset = 0;
+			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
+					kAbsoluteEncoderID,
+					kTurningMotorID,
+					kLeaderDriveMotorID,
+					kFollowerDriveMotorID,
+					kAngleOffset);
+		}
 	}
 
 	public static class DriveConstants {

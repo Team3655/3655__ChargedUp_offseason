@@ -8,7 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 
-import frc.robot.TractorToolbox.TractorParts.PIDGains;
+import frc.lib.TractorToolbox.TractorParts.PIDGains;
 
 public class ArmSegment {
 

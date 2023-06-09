@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.Constants.ArmConstants.kArmPoses;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.TractorToolbox.TractorParts.PathBuilder;
+import frc.lib.TractorToolbox.TractorParts.PathBuilder;
 import frc.robot.commands.ArmPoseCommand;
 import frc.robot.commands.ArmSwitchCommand;
 import frc.robot.commands.FloorIntakeCommand;

@@ -1,23 +1,10 @@
-package frc.robot.TractorToolbox;
+package frc.lib.TractorToolbox;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Constants.OperatorConstants;
 
 public class JoystickUtils {
-
-	/**
-	 * Applies a deadband to the input value from OperatorConstants
-	 * 
-	 * @param input the value to be constrained
-	 * @return the constrained value
-	 */
-	public static double deadBand(double input) {
-		if (Math.abs(input) < OperatorConstants.KDeadBand) {
-			return 0;
-		}
-		return input;
-	}
 
 	/**
 	 * squares the joystick input and uses clever math to compansate for the offset
@@ -26,25 +13,25 @@ public class JoystickUtils {
 	 * @param input The input from the joystick
 	 * @return The corrected joystick values
 	 */
-	public static double curveInput(double input) {
+	public static double curveInput(double input, double deadband) {
 
 		// returns zero if input is less than deadband
-		if (deadBand(input) == 0)
+		if (MathUtil.applyDeadband(input, deadband) == 0)
 			return 0;
 
 		double correctedValue = input;
 
 		// does funky math to force linear output between deanband and 1
-		correctedValue = (correctedValue - (OperatorConstants.KDeadBand * Math.signum(correctedValue)))
-				/ (1 - OperatorConstants.KDeadBand);
+		correctedValue = (correctedValue - (deadband * Math.signum(correctedValue)))
+				/ (1 - deadband);
 
 		// raises input to a specified power for a smoother feel
-		correctedValue = Math.copySign(Math.pow(Math.abs(correctedValue), OperatorConstants.kJoystickPow), input);
+		correctedValue = Math.copySign(Math.pow(Math.abs(correctedValue), 2), input);
 
 		return correctedValue;
 	}
 
-	public static Translation2d curveTranslation2d(Translation2d translation) {
+	public static Translation2d curveTranslation2d(Translation2d translation, double deadband) {
 		// gets the length and rotarion of the Translation2d (vector)
 		double norm = translation.getNorm();
 		Rotation2d angle = translation.getAngle();
@@ -54,7 +41,7 @@ public class JoystickUtils {
 			norm = 1;
 
 		// curves the length of the vector for smoother feel
-		double curvedNorm = curveInput(norm);
+		double curvedNorm = curveInput(norm, deadband);
 
 		// create new curved Translation2d
 		translation = new Translation2d(curvedNorm, angle);

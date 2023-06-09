@@ -23,12 +23,19 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.TractorToolbox.JoystickUtils;
+import frc.lib.util.LimelightHelpers;
 import frc.robot.Constants;
-import frc.robot.Constants.BaseModuleConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.LimelightConstants;
+import frc.robot.Constants.ModuleConstants;
+import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.ModuleConstants.BackLeftModule;
+import frc.robot.Constants.ModuleConstants.BackRightModule;
+import frc.robot.Constants.ModuleConstants.FrontLeftModule;
+import frc.robot.Constants.ModuleConstants.FrontRightModule;
+import frc.robot.Constants.ModuleConstants.GenericModuleConstants;
 import frc.robot.Mechanisms.SwerveModule;
-import frc.robot.TractorToolbox.JoystickUtils;
-import frc.robot.TractorToolbox.LimelightHelpers;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -36,8 +43,8 @@ public class DriveSubsystem extends SubsystemBase {
 
 	private final SwerveModule frontLeft;
 	private final SwerveModule frontRight;
-	private final SwerveModule rearLeft;
-	private final SwerveModule rearRight;
+	private final SwerveModule backLeft;
+	private final SwerveModule backRight;
 
 	private SwerveModulePosition[] swervePositions;
 
@@ -45,60 +52,48 @@ public class DriveSubsystem extends SubsystemBase {
 	private final WPI_Pigeon2 gyro;
 
 	// Odeometry class for tracking robot pose
-	SwerveDriveOdometry odometry;
+	private SwerveDriveOdometry odometry;
 
 	private Field2d field;
 
-	private SwerveDrivePoseEstimator poseEstimator;
+	private SwerveDrivePoseEstimator posEstimator;
 
 	/** Creates a new DriveSubsystem. */
 	public DriveSubsystem() {
 
 		frontLeft = new SwerveModule(
-				"FL",
-				BaseModuleConstants.kFrontLeftTurningMotorPort,
-				BaseModuleConstants.kPrimaryFrontLeftDriveMotorPort,
-				BaseModuleConstants.kSecondaryFrontLeftDriveMotorPort,
-				BaseModuleConstants.kFrontLeftAbsoluteEncoderPort,
-				BaseModuleConstants.kFrontLeftAngleZero,
-				BaseModuleConstants.kModuleTurningGains,
-				BaseModuleConstants.kModuleDriveGains);
+			"FL",
+			FrontLeftModule.kModuleConstants,
+			GenericModuleConstants.kSwerveConstants,
+			ModuleConstants.kModuleTurningGains,
+			ModuleConstants.kModuleDriveGains);
 
 		frontRight = new SwerveModule(
 				"FR",
-				BaseModuleConstants.kFrontRightTurningMotorPort,
-				BaseModuleConstants.kPrimaryFrontRightDriveMotorPort,
-				BaseModuleConstants.kSecondaryFrontRightDriveMotorPort,
-				BaseModuleConstants.kFrontRightAbsoluteEncoderPort,
-				BaseModuleConstants.kFrontRightAngleZero,
-				BaseModuleConstants.kModuleTurningGains,
-				BaseModuleConstants.kModuleDriveGains);
+				FrontRightModule.kModuleConstants,
+				GenericModuleConstants.kSwerveConstants,
+				ModuleConstants.kModuleTurningGains,
+				ModuleConstants.kModuleDriveGains);
 
-		rearLeft = new SwerveModule(
+		backLeft = new SwerveModule(
 				"RL",
-				BaseModuleConstants.kRearLeftTurningMotorPort,
-				BaseModuleConstants.kPrimaryRearLeftDriveMotorPort,
-				BaseModuleConstants.kSecondaryRearLeftDriveMotorPort,
-				BaseModuleConstants.kRearLeftAbsoluteEncoderPort,
-				BaseModuleConstants.kRearLeftAngleZero,
-				BaseModuleConstants.kModuleTurningGains,
-				BaseModuleConstants.kModuleDriveGains);
+				BackLeftModule.kModuleConstants,
+				GenericModuleConstants.kSwerveConstants,
+				ModuleConstants.kModuleTurningGains,
+				ModuleConstants.kModuleDriveGains);
 
-		rearRight = new SwerveModule(
+		backRight = new SwerveModule(
 				"RR",
-				BaseModuleConstants.kRearRightTurningMotorPort,
-				BaseModuleConstants.kPrimaryRearRightDriveMotorPort,
-				BaseModuleConstants.kSecondaryRearRightDriveMotorPort,
-				BaseModuleConstants.kRearRightAbsoluteEncoderPort,
-				BaseModuleConstants.kRearRightAngleZero,
-				BaseModuleConstants.kModuleTurningGains,
-				BaseModuleConstants.kModuleDriveGains);
+				BackRightModule.kModuleConstants,
+				GenericModuleConstants.kSwerveConstants,
+				ModuleConstants.kModuleTurningGains,
+				ModuleConstants.kModuleDriveGains);
 
 		swervePositions = new SwerveModulePosition[] {
 				frontLeft.getPosition(),
 				frontRight.getPosition(),
-				rearLeft.getPosition(),
-				rearRight.getPosition()
+				backLeft.getPosition(),
+				backRight.getPosition()
 		};
 
 		gyro = new WPI_Pigeon2(DriveConstants.kPigeonPort, Constants.kCTRECANBusName);
@@ -111,7 +106,7 @@ public class DriveSubsystem extends SubsystemBase {
 
 		field = new Field2d();
 
-		poseEstimator = new SwerveDrivePoseEstimator(
+		posEstimator = new SwerveDrivePoseEstimator(
 				DriveConstants.kDriveKinematics,
 				gyro.getRotation2d(),
 				swervePositions,
@@ -121,29 +116,10 @@ public class DriveSubsystem extends SubsystemBase {
 	@Override
 	public void periodic() {
 		// This method will be called once per scheduler run
-		
+
 		updateOdometry();
 
-		frontLeft.updateTelemetry();
-
-		SmartDashboard.putNumber("FL Absolute", frontLeft.getAbsoluteHeading());
-		SmartDashboard.putNumber("FR Absolute", frontRight.getAbsoluteHeading());
-		SmartDashboard.putNumber("RL Absolute", rearLeft.getAbsoluteHeading());
-		SmartDashboard.putNumber("RR Absolute", rearRight.getAbsoluteHeading());
-
-		SmartDashboard.putNumber("Gyro yaw", gyro.getYaw());
-		SmartDashboard.putNumber("Gyro pitch", gyro.getPitch());
-		SmartDashboard.putNumber("Gyro roll", gyro.getRoll());
-
-		SmartDashboard.putNumber("FL Meters", frontLeft.getDistanceMeters());
-		SmartDashboard.putNumber("FR Meters", frontRight.getDistanceMeters());
-		SmartDashboard.putNumber("RL Meters", rearLeft.getDistanceMeters());
-		SmartDashboard.putNumber("RR Meters", rearRight.getDistanceMeters());
-
-		SmartDashboard.putData("field", field);
-		SmartDashboard.putNumber("2D Gyro", odometry.getPoseMeters().getRotation().getDegrees());
-		SmartDashboard.putNumber("2D X", getPose().getX());
-		SmartDashboard.putNumber("2D Y", getPose().getY());
+		updateTelemetry();
 	}
 
 	// region getters
@@ -172,7 +148,14 @@ public class DriveSubsystem extends SubsystemBase {
 	}
 
 	public Pose2d getPoseEstimatorPose2d() {
-		return poseEstimator.getEstimatedPosition();
+		return posEstimator.getEstimatedPosition();
+	}
+
+	public void resetPoseEstimator(Pose2d pose) {
+		posEstimator.resetPosition(
+			gyro.getRotation2d(), 
+			swervePositions, 
+			pose);
 	}
 
 	public void resetOdometry(Pose2d pose) {
@@ -210,17 +193,19 @@ public class DriveSubsystem extends SubsystemBase {
 	}
 
 	/**
-	 * A drive function that curves the input for th drivers. DO NOT USE FOR DRIVING FUNCTIONS!
+	 * A drive function that curves the input for th drivers. DO NOT USE FOR
+	 * ANYTHING BUT THE DRIVER! use codeDrive() instead.
+	 * 
 	 * @param xSpeed 
-	 * @param ySpeed
-	 * @param rotation
-	 * @param isTurbo
-	 * @param isSneak
+	 * @param ySpeed 
+	 * @param rotation 
+	 * @param isTurbo 
+	 * @param isSneak 
 	 */
 	public void driverDrive(double xSpeed, double ySpeed, double rotation, boolean isTurbo, boolean isSneak) {
 		Translation2d translation = new Translation2d(xSpeed, ySpeed);
-		translation = JoystickUtils.curveTranslation2d(translation);
-		rotation = JoystickUtils.curveInput(rotation);
+		translation = JoystickUtils.curveTranslation2d(translation, OperatorConstants.KDeadBand);
+		rotation = JoystickUtils.curveInput(rotation, OperatorConstants.KDeadBand);
 		drive(translation, rotation, isTurbo, isSneak);
 	}
 
@@ -231,21 +216,24 @@ public class DriveSubsystem extends SubsystemBase {
 		if (isSneak) {
 			maxSpeed = DriveConstants.kMaxSneakMetersPerSecond;
 		} else {
-			maxSpeed = DriveConstants.kMaxSpeedMetersPerSecond;	
+			maxSpeed = DriveConstants.kMaxSpeedMetersPerSecond;
 		}
 
-		double xSpeed = maxSpeed * translation.getX();
-		double ySpeed = maxSpeed * translation.getY();
+		translation = translation.times(maxSpeed);
+
+		double xSpeed = translation.getX();
+		double ySpeed = translation.getY();
 
 		rotation *= DriveConstants.kMaxRPM;
 
 		ChassisSpeeds chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, rotation);
 
-		SwerveModuleState[] swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
-				useFieldCentric
-						? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, gyro.getRotation2d())
-						: new ChassisSpeeds(xSpeed, ySpeed, rotation));
+		if (useFieldCentric)
+			ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, gyro.getRotation2d());
 
+		SwerveModuleState[] swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
+
+		// set the swerve modules to their states
 		setModuleStates(swerveModuleStates, isTurbo);
 	}
 
@@ -254,35 +242,36 @@ public class DriveSubsystem extends SubsystemBase {
 	}
 
 	public void setModuleStates(SwerveModuleState[] desiredStates, boolean isTurbo) {
-		SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, BaseModuleConstants.kMaxModuleSpeedMetersPerSecond);
+		SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, GenericModuleConstants.kMaxModuleSpeedMetersPerSecond);
 
 		frontLeft.setDesiredState(desiredStates[0], isTurbo);
 		frontRight.setDesiredState(desiredStates[1], isTurbo);
-		rearLeft.setDesiredState(desiredStates[2], isTurbo);
-		rearRight.setDesiredState(desiredStates[3], isTurbo);
+		backLeft.setDesiredState(desiredStates[2], isTurbo);
+		backRight.setDesiredState(desiredStates[3], isTurbo);
 	}
 
 	public void updateOdometry() {
 		swervePositions = new SwerveModulePosition[] {
 				frontLeft.getPosition(),
 				frontRight.getPosition(),
-				rearLeft.getPosition(),
-				rearRight.getPosition()
+				backLeft.getPosition(),
+				backRight.getPosition()
 		};
 
 		odometry.update(
 				Rotation2d.fromDegrees(getHeading()),
 				swervePositions);
 
-		poseEstimator.update(gyro.getRotation2d(), swervePositions);
+		posEstimator.update(gyro.getRotation2d(), swervePositions);
 
-		if (LimelightHelpers.getTV("")) {
+		if (LimelightHelpers.getTV("") && LimelightHelpers.getCurrentPipelineIndex("") == LimelightConstants.kApriltagPipeline) {
 			Pose2d llPose2d = LimelightHelpers.getBotPose2d_wpiRed("");
-			double latency = Units.millisecondsToSeconds(LimelightHelpers.getLatency_Capture("") - LimelightHelpers.getLatency_Pipeline(""));
+			double latency = Units.millisecondsToSeconds(
+					LimelightHelpers.getLatency_Capture("") - LimelightHelpers.getLatency_Pipeline(""));
 			double timeStamp = Timer.getFPGATimestamp() - latency;
-			poseEstimator.addVisionMeasurement(
-				llPose2d, 
-				timeStamp); 
+			posEstimator.addVisionMeasurement(
+					llPose2d,
+					timeStamp);
 		}
 
 		field.setRobotPose(odometry.getPoseMeters());
@@ -307,10 +296,25 @@ public class DriveSubsystem extends SubsystemBase {
 	public void stopMotors() {
 		frontLeft.stopMotors();
 		frontRight.stopMotors();
-		rearLeft.stopMotors();
-		rearRight.stopMotors();
+		backLeft.stopMotors();
+		backRight.stopMotors();
+	}
+
+	public void updateTelemetry() {
+		frontLeft.updateTelemetry();
+		frontRight.updateTelemetry();
+		backLeft.updateTelemetry();
+		backRight.updateTelemetry();
+
+		SmartDashboard.putNumber("Gyro yaw", gyro.getYaw());
+		SmartDashboard.putNumber("Gyro pitch", gyro.getPitch());
+		SmartDashboard.putNumber("Gyro roll", gyro.getRoll());
+
+		SmartDashboard.putData("field", field);
+		SmartDashboard.putNumber("2D Gyro", odometry.getPoseMeters().getRotation().getDegrees());
+		SmartDashboard.putNumber("2D X", getPose().getX());
+		SmartDashboard.putNumber("2D Y", getPose().getY());
 	}
 
 	// endregion
-
 }
