@@ -33,7 +33,7 @@ public class PathBuilder {
 
 		autoBuilder = new SwerveAutoBuilder(
 				driveSubsystem::getPoseEstimatorPose2d,
-				driveSubsystem::resetOdometry,
+				driveSubsystem::resetPoseEstimator,
 				DriveConstants.kDriveKinematics,
 				new PIDConstants(
 						PathPLannerConstants.kPPDriveGains.kP,

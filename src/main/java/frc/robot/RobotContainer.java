@@ -14,19 +14,19 @@ import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
+import frc.lib.TractorToolbox.TractorParts.PathBuilder;
 import frc.robot.Constants.ArmConstants.kArmPoses;
 import frc.robot.Constants.OperatorConstants;
-import frc.lib.TractorToolbox.TractorParts.PathBuilder;
 import frc.robot.commands.ArmPoseCommand;
 import frc.robot.commands.ArmSwitchCommand;
 import frc.robot.commands.FloorIntakeCommand;
+import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.commands.TurnCommand;
 import frc.robot.commands.Autonomous.BalanceCommand;
+import frc.robot.commands.Autonomous.IntakeCommand;
 import frc.robot.commands.Autonomous.ScoreSequence;
 import frc.robot.commands.Limelight.LLAlignCommand;
 import frc.robot.commands.Limelight.LLTargetCubeCommand;
-import frc.robot.commands.Autonomous.IntakeCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
@@ -91,6 +91,7 @@ public class RobotContainer {
 		autoChooser.addOption("Event Test", autoBuilder.getPathCommand("Event Test"));
 		autoChooser.addOption("Square", autoBuilder.getPathCommand("Square"));
 		autoChooser.addOption("Target Cube Test", autoBuilder.getPathCommand("Cube Target Test"));
+		autoChooser.addOption("Odometry Hell", autoBuilder.getPathCommand("Odometry Hell"));
 
 		autoChooser.addOption("1 Human Player", autoBuilder.getPathCommand("1 Human Player"));
 		autoChooser.addOption("1 Wall", autoBuilder.getPathCommand("1 Wall"));
@@ -181,15 +182,15 @@ public class RobotContainer {
 				new RunCommand(() -> driveSubsystem.robotCentricDrive(-0.05, 0, 0), driveSubsystem));
 
 		// Swerve Drive method is set as default for drive subsystem
-			driveSubsystem.setDefaultCommand(
-				new RunCommand(
-						() -> driveSubsystem.driverDrive(
-								-driveJoystick.getY() - programmerController.getLeftY(), // x axis
-								-driveJoystick.getX() - programmerController.getLeftX(), // y axis
-								-turnJoystick.getX() - programmerController.getRightX(), // rot axis
-								driveJoystick.getHID().getRawButton(1) || programmerController.rightBumper().getAsBoolean(), // turbo boolean
-								driveJoystick.getHID().getRawButton(2)), // sneak boolean
-						driveSubsystem));
+		driveSubsystem.setDefaultCommand(
+				new TeleopDriveCommand(
+						() -> -driveJoystick.getY() -programmerController.getLeftY(),
+						() -> -driveJoystick.getX() -programmerController.getLeftX(),
+						() -> -turnJoystick.getX() -programmerController.getRightX(),
+						() -> driveJoystick.getHID().getRawButton(1)
+								|| programmerController.rightBumper().getAsBoolean(),
+						() -> driveJoystick.getHID().getRawButton(2)
+								|| programmerController.rightBumper().getAsBoolean()));
 		// endregion
 	}
 

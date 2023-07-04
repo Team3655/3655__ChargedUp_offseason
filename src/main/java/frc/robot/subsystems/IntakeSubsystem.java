@@ -43,7 +43,7 @@ public class IntakeSubsystem extends SubsystemBase {
 		currentIntakeState = kIntakeStates.DISABLED;
 
 		centerSucker = new Vaccum(
-				IntakeConstants.kCenterSuckerPort,
+				IntakeConstants.kCenterSuckerID,
 				IntakeConstants.kCenterSuckerCurrentLimit,
 				true,
 				centerDumpSolenoid,

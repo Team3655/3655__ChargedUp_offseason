@@ -23,13 +23,10 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.TractorToolbox.JoystickUtils;
 import frc.lib.util.LimelightHelpers;
-import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants.ModuleConstants;
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ModuleConstants.BackLeftModule;
 import frc.robot.Constants.ModuleConstants.BackRightModule;
 import frc.robot.Constants.ModuleConstants.FrontLeftModule;
@@ -62,11 +59,11 @@ public class DriveSubsystem extends SubsystemBase {
 	public DriveSubsystem() {
 
 		frontLeft = new SwerveModule(
-			"FL",
-			FrontLeftModule.kModuleConstants,
-			GenericModuleConstants.kSwerveConstants,
-			ModuleConstants.kModuleTurningGains,
-			ModuleConstants.kModuleDriveGains);
+				"FL",
+				FrontLeftModule.kModuleConstants,
+				GenericModuleConstants.kSwerveConstants,
+				ModuleConstants.kModuleTurningGains,
+				ModuleConstants.kModuleDriveGains);
 
 		frontRight = new SwerveModule(
 				"FR",
@@ -96,7 +93,7 @@ public class DriveSubsystem extends SubsystemBase {
 				backRight.getPosition()
 		};
 
-		gyro = new WPI_Pigeon2(DriveConstants.kPigeonPort, Constants.kCTRECANBusName);
+		gyro = new WPI_Pigeon2(DriveConstants.kPigeonPort);
 		gyro.setYaw(0);
 
 		odometry = new SwerveDriveOdometry(
@@ -153,9 +150,9 @@ public class DriveSubsystem extends SubsystemBase {
 
 	public void resetPoseEstimator(Pose2d pose) {
 		posEstimator.resetPosition(
-			gyro.getRotation2d(), 
-			swervePositions, 
-			pose);
+				gyro.getRotation2d(),
+				swervePositions,
+				pose);
 	}
 
 	public void resetOdometry(Pose2d pose) {
@@ -192,23 +189,6 @@ public class DriveSubsystem extends SubsystemBase {
 		drive(dir, rotation, false, false);
 	}
 
-	/**
-	 * A drive function that curves the input for th drivers. DO NOT USE FOR
-	 * ANYTHING BUT THE DRIVER! use codeDrive() instead.
-	 * 
-	 * @param xSpeed 
-	 * @param ySpeed 
-	 * @param rotation 
-	 * @param isTurbo 
-	 * @param isSneak 
-	 */
-	public void driverDrive(double xSpeed, double ySpeed, double rotation, boolean isTurbo, boolean isSneak) {
-		Translation2d translation = new Translation2d(xSpeed, ySpeed);
-		translation = JoystickUtils.curveTranslation2d(translation, OperatorConstants.KDeadBand);
-		rotation = JoystickUtils.curveInput(rotation, OperatorConstants.KDeadBand);
-		drive(translation, rotation, isTurbo, isSneak);
-	}
-
 	public void drive(Translation2d translation, double rotation, boolean isTurbo, boolean isSneak) {
 
 		double maxSpeed;
@@ -229,7 +209,7 @@ public class DriveSubsystem extends SubsystemBase {
 		ChassisSpeeds chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, rotation);
 
 		if (useFieldCentric)
-			ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, gyro.getRotation2d());
+			chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, gyro.getRotation2d());
 
 		SwerveModuleState[] swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
 
@@ -242,7 +222,8 @@ public class DriveSubsystem extends SubsystemBase {
 	}
 
 	public void setModuleStates(SwerveModuleState[] desiredStates, boolean isTurbo) {
-		SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, GenericModuleConstants.kMaxModuleSpeedMetersPerSecond);
+		SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates,
+				GenericModuleConstants.kMaxModuleSpeedMetersPerSecond);
 
 		frontLeft.setDesiredState(desiredStates[0], isTurbo);
 		frontRight.setDesiredState(desiredStates[1], isTurbo);
@@ -264,7 +245,8 @@ public class DriveSubsystem extends SubsystemBase {
 
 		posEstimator.update(gyro.getRotation2d(), swervePositions);
 
-		if (LimelightHelpers.getTV("") && LimelightHelpers.getCurrentPipelineIndex("") == LimelightConstants.kApriltagPipeline) {
+		if (LimelightHelpers.getTV("")
+				&& LimelightHelpers.getCurrentPipelineIndex("") == LimelightConstants.kApriltagPipeline) {
 			Pose2d llPose2d = LimelightHelpers.getBotPose2d_wpiRed("");
 			double latency = Units.millisecondsToSeconds(
 					LimelightHelpers.getLatency_Capture("") - LimelightHelpers.getLatency_Pipeline(""));

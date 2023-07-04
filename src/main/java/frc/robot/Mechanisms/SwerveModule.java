@@ -4,29 +4,25 @@
 
 package frc.robot.Mechanisms;
 
-import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.ctre.phoenix.sensors.CANCoder;
-import com.ctre.phoenix.sensors.CANCoderStatusFrame;
-import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
-import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.TractorToolbox.SparkMaxMaker;
 import frc.lib.TractorToolbox.TractorParts.PIDGains;
 import frc.lib.TractorToolbox.TractorParts.SwerveConstants;
 import frc.lib.TractorToolbox.TractorParts.SwerveModuleConstants;
-import frc.robot.Constants;
 
 public class SwerveModule {
 
@@ -34,7 +30,7 @@ public class SwerveModule {
 	private final CANSparkMax leaderDriveMotor;
 	private final CANSparkMax followerDriveMotor;
 
-	private final CANCoder absoluteEncoder;
+	// private final CANCoder absoluteEncoder;
 
 	private final RelativeEncoder driveEncoder;
 	private final RelativeEncoder turnEncoder;
@@ -64,13 +60,13 @@ public class SwerveModule {
 		this.angleZeroOffset = moduleConstants.kAngleZeroOffset;
 		optimizedState = new SwerveModuleState();
 
-		// Initalize CANcoder
-		absoluteEncoder = new CANCoder(moduleConstants.kCANCoderID, Constants.kCTRECANBusName);
-		absoluteEncoder.configFactoryDefault();
-		absoluteEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition);
-		absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
-		absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10, 100);
-		absoluteEncoder.clearStickyFaults();
+		// // Initalize CANcoder
+		// absoluteEncoder = new CANCoder(moduleConstants.kCANCoderID, Constants.kCTRECANBusName);
+		// absoluteEncoder.configFactoryDefault();
+		// absoluteEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition);
+		// absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+		// absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10, 100);
+		// absoluteEncoder.clearStickyFaults();
 
 		// Initialize the motors
 		// Initialize turning motor, encoder, and PID
@@ -119,14 +115,15 @@ public class SwerveModule {
 		// Follower Drive Motor
 		followerDriveMotor = SparkMaxMaker.createSparkMax(moduleConstants.kFolloweDriveMotorID);
 		followerDriveMotor.follow(leaderDriveMotor, true);
-		followerDriveMotor.setSmartCurrentLimit(35);
+		followerDriveMotor.setSmartCurrentLimit(swerveConstants.kDriveSmartCurrentLimit);
 
-		throughBore = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
+		throughBore = followerDriveMotor.getAbsoluteEncoder(Type.kDutyCycle);
 		throughBore.setPositionConversionFactor((2 * Math.PI));
-		throughBore.setZeroOffset(-angleZeroOffset);
+		// throughBore.setZeroOffset(-angleZeroOffset);
 
 		// turnPID.setFeedbackDevice(throughBore);
-		turnEncoder.setPosition(Units.degreesToRadians(absoluteEncoder.getAbsolutePosition() - angleZeroOffset));
+		Timer.delay(.1);
+		turnEncoder.setPosition(throughBore.getPosition() - Units.degreesToRadians(angleZeroOffset));
 	}
 
 	// Returns headings of the module
@@ -142,7 +139,7 @@ public class SwerveModule {
 	 * radians
 	 */
 	public double getAbsoluteHeading() {
-		return absoluteEncoder.getAbsolutePosition() - angleZeroOffset;
+		return throughBore.getPosition() - angleZeroOffset;
 	}
 
 	public double getDistanceMeters() {
@@ -216,12 +213,13 @@ public class SwerveModule {
 		// SmartDashboard.putNumber(moduleName + " ThroughBore Angle",
 		// Units.radiansToDegrees(throughBore.getPosition()));
 		SmartDashboard.putNumber(moduleName + " Offset", angleZeroOffset);
-		SmartDashboard.putString(moduleName + " Abs. Status", absoluteEncoder.getLastError().toString());
+		//SmartDashboard.putString(moduleName + " Abs. Status", absoluteEncoder.getLastError().toString());
 		SmartDashboard.putNumber(moduleName + " Drive Current Draw", leaderDriveMotor.getOutputCurrent());
 		SmartDashboard.putNumber(moduleName + " Optimized Angle", optimizedState.angle.getDegrees());
 		SmartDashboard.putNumber(moduleName + " Turn Motor Output", turnMotor.getAppliedOutput());
 		SmartDashboard.putNumber(moduleName + " Target Velocity", optimizedState.speedMetersPerSecond);
 		SmartDashboard.putNumber(moduleName + " Velocity", driveEncoder.getVelocity());
+		SmartDashboard.putNumber(moduleName + " Absolute Angle", throughBore.getPosition());
 		SmartDashboard.putNumber(moduleName + " SparkEncoder Angle",
 				Units.radiansToDegrees(getHeading()));
 	}
