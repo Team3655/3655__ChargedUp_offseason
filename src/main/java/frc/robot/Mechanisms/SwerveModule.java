@@ -49,23 +49,25 @@ public class SwerveModule {
 
 	/** Creates a new SwerveModule. */
 	public SwerveModule(
-			String moduleName,		
+			String moduleName,
 			SwerveModuleConstants moduleConstants,
 			SwerveConstants swerveConstants,
 			PIDGains kmoduleturninggains,
-			PIDGains kmoduledrivegains){
-				
+			PIDGains kmoduledrivegains) {
+
 		this.swerveConstants = swerveConstants;
 		this.moduleName = moduleName;
 		this.angleZeroOffset = moduleConstants.kAngleZeroOffset;
 		optimizedState = new SwerveModuleState();
 
 		// // Initalize CANcoder
-		// absoluteEncoder = new CANCoder(moduleConstants.kCANCoderID, Constants.kCTRECANBusName);
+		// absoluteEncoder = new CANCoder(moduleConstants.kCANCoderID,
+		// Constants.kCTRECANBusName);
 		// absoluteEncoder.configFactoryDefault();
 		// absoluteEncoder.configSensorInitializationStrategy(SensorInitializationStrategy.BootToAbsolutePosition);
 		// absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
-		// absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10, 100);
+		// absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10,
+		// 100);
 		// absoluteEncoder.clearStickyFaults();
 
 		// Initialize the motors
@@ -122,12 +124,10 @@ public class SwerveModule {
 		// throughBore.setZeroOffset(-angleZeroOffset);
 
 		// turnPID.setFeedbackDevice(throughBore);
-		Timer.delay(.1);
-		turnEncoder.setPosition(throughBore.getPosition() - Units.degreesToRadians(angleZeroOffset));
+		setAngleOffset();
 	}
 
-	// Returns headings of the module
-
+	// region: getters
 
 	/** returns the current heading of the module in radians */
 	public double getHeading() {
@@ -163,6 +163,7 @@ public class SwerveModule {
 
 		return new SwerveModulePosition(distanceMeters, new Rotation2d(moduleAngleRadians));
 	}
+	// endregion: getters
 
 	// region: Setters
 	public void setDesiredState(SwerveModuleState desiredState) {
@@ -208,22 +209,54 @@ public class SwerveModule {
 		turnMotor.stopMotor();
 	}
 
+	public void setAngleOffset() {
+		turnEncoder.setPosition(throughBore.getPosition() - Units.degreesToRadians(angleZeroOffset));
+	}
+
 	public void updateTelemetry() {
 		SmartDashboard.putNumber(moduleName + " Angle Error", Units.radiansToDegrees(getAngleError()));
 		// SmartDashboard.putNumber(moduleName + " ThroughBore Angle",
 		// Units.radiansToDegrees(throughBore.getPosition()));
 		SmartDashboard.putNumber(moduleName + " Offset", angleZeroOffset);
-		//SmartDashboard.putString(moduleName + " Abs. Status", absoluteEncoder.getLastError().toString());
+		// SmartDashboard.putString(moduleName + " Abs. Status",
+		// absoluteEncoder.getLastError().toString());
 		SmartDashboard.putNumber(moduleName + " Drive Current Draw", leaderDriveMotor.getOutputCurrent());
 		SmartDashboard.putNumber(moduleName + " Optimized Angle", optimizedState.angle.getDegrees());
 		SmartDashboard.putNumber(moduleName + " Turn Motor Output", turnMotor.getAppliedOutput());
 		SmartDashboard.putNumber(moduleName + " Target Velocity", optimizedState.speedMetersPerSecond);
 		SmartDashboard.putNumber(moduleName + " Velocity", driveEncoder.getVelocity());
-		SmartDashboard.putNumber(moduleName + " Absolute Angle", throughBore.getPosition());
+		SmartDashboard.putNumber(moduleName + " Absolute Angle", Units.radiansToDegrees(getAbsoluteHeading()));
 		SmartDashboard.putNumber(moduleName + " SparkEncoder Angle",
 				Units.radiansToDegrees(getHeading()));
 	}
 
 	// endregion: setters
 
+	// region: doers
+
+	public void attemptAgnleOffset() {
+
+		int attempts = 0;
+
+		System.out.println("ZEROING " + moduleName);
+
+		while (true) {
+
+			if (Units.radiansToDegrees(Math.abs(getHeading()) - Math.abs(getAbsoluteHeading())) > 1) {
+				System.out.println("WHEEL ZEROING FAILED! looping...");
+				attempts++;
+			} else {
+				System.out.println(moduleName + " WHEEL ZEROED CORRECTLY. in " + attempts + " attempts");
+				break;
+			}
+
+			setAngleOffset();
+
+			Timer.delay(.1);
+
+		}
+
+	}
+
+	// endregion: doers
 }

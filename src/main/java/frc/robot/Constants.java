@@ -35,6 +35,8 @@ public final class Constants {
 
 	public static class ModuleConstants {
 
+		public static final int kMaxRezeroAttempts = 10;
+
 		// gains set for R1 SDS mk4i using dual neo motors
 		public static final PIDGains kModuleDriveGains = new PIDGains(.075, 0, 0);
 		public static final PIDGains kModuleTurningGains = new PIDGains(1.5, 0.002, 0.0016);
@@ -167,7 +169,7 @@ public final class Constants {
 			public static final PIDGains kPPTurnGains = new PIDGains(3.5, 0, 0);
 
 			public static final double kPPMaxVelocity = 4.00;
-			public static final double kPPMaxAcceleration = 2.50;
+			public static final double kPPMaxAcceleration = 2.5;
 
 			public static final HashMap<String, Command> kPPEventMap = new HashMap<>() {
 				{
@@ -198,8 +200,8 @@ public final class Constants {
 		public static final double kTurnCommandToleranceDeg = 0.5;
 		public static final double kTurnCommandRateToleranceDegPerS = 0;
 
-		public static final double kBalnaceCommandDeadbandDeg = 2;
-		public static final PIDGains kBalanceCommandGains = new PIDGains(.006, 0, 0);
+		public static final double kBalnaceCommandDeadbandDeg = 10;
+		public static final PIDGains kBalanceCommandGains = new PIDGains(.003, 0, 0);
 		public static final double kMaxBalancingVelocity = 1000;
 		public static final double kMaxBalancingAcceleration = 5000;
 
@@ -330,7 +332,7 @@ public final class Constants {
 
 		public static final HashMap<kArmPoses, kIntakeStates> kArmStateToIntakeStateMap = new HashMap<kArmPoses, kIntakeStates>() {
 			{
-				put(kArmPoses.TUCKED, kIntakeStates.INTAKE);
+				put(kArmPoses.TUCKED, kIntakeStates.IDLE);
 				put(kArmPoses.LOW_SCORE, kIntakeStates.IDLE);
 				put(kArmPoses.MID_SCORE, kIntakeStates.IDLE);
 				put(kArmPoses.HIGH_SCORE, kIntakeStates.IDLE);

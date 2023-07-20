@@ -17,15 +17,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.util.LimelightHelpers;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants.ModuleConstants;
 import frc.robot.Constants.ModuleConstants.BackLeftModule;
 import frc.robot.Constants.ModuleConstants.BackRightModule;
@@ -37,6 +33,8 @@ import frc.robot.Mechanisms.SwerveModule;
 public class DriveSubsystem extends SubsystemBase {
 
 	private boolean useFieldCentric = true;
+
+	private final double pitchOffset;
 
 	private final SwerveModule frontLeft;
 	private final SwerveModule frontRight;
@@ -73,18 +71,20 @@ public class DriveSubsystem extends SubsystemBase {
 				ModuleConstants.kModuleDriveGains);
 
 		backLeft = new SwerveModule(
-				"RL",
+				"BL",
 				BackLeftModule.kModuleConstants,
 				GenericModuleConstants.kSwerveConstants,
 				ModuleConstants.kModuleTurningGains,
 				ModuleConstants.kModuleDriveGains);
 
 		backRight = new SwerveModule(
-				"RR",
+				"BR",
 				BackRightModule.kModuleConstants,
 				GenericModuleConstants.kSwerveConstants,
 				ModuleConstants.kModuleTurningGains,
 				ModuleConstants.kModuleDriveGains);
+
+		updateOffsets();
 
 		swervePositions = new SwerveModulePosition[] {
 				frontLeft.getPosition(),
@@ -95,6 +95,7 @@ public class DriveSubsystem extends SubsystemBase {
 
 		gyro = new WPI_Pigeon2(DriveConstants.kPigeonPort);
 		gyro.setYaw(0);
+		pitchOffset = gyro.getPitch();
 
 		odometry = new SwerveDriveOdometry(
 				DriveConstants.kDriveKinematics,
@@ -133,7 +134,7 @@ public class DriveSubsystem extends SubsystemBase {
 	}
 
 	public double getPitch() {
-		return gyro.getPitch();
+		return gyro.getPitch() - pitchOffset;
 	}
 
 	public double getTurnRate() {
@@ -245,16 +246,16 @@ public class DriveSubsystem extends SubsystemBase {
 
 		posEstimator.update(gyro.getRotation2d(), swervePositions);
 
-		if (LimelightHelpers.getTV("")
-				&& LimelightHelpers.getCurrentPipelineIndex("") == LimelightConstants.kApriltagPipeline) {
-			Pose2d llPose2d = LimelightHelpers.getBotPose2d_wpiRed("");
-			double latency = Units.millisecondsToSeconds(
-					LimelightHelpers.getLatency_Capture("") - LimelightHelpers.getLatency_Pipeline(""));
-			double timeStamp = Timer.getFPGATimestamp() - latency;
-			posEstimator.addVisionMeasurement(
-					llPose2d,
-					timeStamp);
-		}
+		// if (LimelightHelpers.getTV("")
+		// 		&& LimelightHelpers.getCurrentPipelineIndex("") == LimelightConstants.kApriltagPipeline) {
+		// 	Pose2d llPose2d = LimelightHelpers.getBotPose2d_wpiRed("");
+		// 	double latency = Units.millisecondsToSeconds(
+		// 			LimelightHelpers.getLatency_Capture("") - LimelightHelpers.getLatency_Pipeline(""));
+		// 	double timeStamp = Timer.getFPGATimestamp() - latency;
+		// 	posEstimator.addVisionMeasurement(
+		// 			llPose2d,
+		// 			timeStamp);
+		// }
 
 		field.setRobotPose(odometry.getPoseMeters());
 	}
@@ -282,6 +283,13 @@ public class DriveSubsystem extends SubsystemBase {
 		backRight.stopMotors();
 	}
 
+	public void updateOffsets() {
+		frontLeft.attemptAgnleOffset();
+		frontRight.attemptAgnleOffset();
+		backLeft.attemptAgnleOffset();
+		backRight.attemptAgnleOffset();
+	}
+
 	public void updateTelemetry() {
 		frontLeft.updateTelemetry();
 		frontRight.updateTelemetry();
@@ -290,6 +298,7 @@ public class DriveSubsystem extends SubsystemBase {
 
 		SmartDashboard.putNumber("Gyro yaw", gyro.getYaw());
 		SmartDashboard.putNumber("Gyro pitch", gyro.getPitch());
+		SmartDashboard.putNumber("Corrected Gyro pitch", getPitch());
 		SmartDashboard.putNumber("Gyro roll", gyro.getRoll());
 
 		SmartDashboard.putData("field", field);

@@ -201,6 +201,11 @@ public class ArmSegment {
 		leftEncoder.setPosition(0);
 	}
 
+	public void setPosition(double radians) {
+		rightEncoder.setPosition(radians);
+		leftEncoder.setPosition(radians);
+	}
+
 	// endregion
 
 	// region: getters

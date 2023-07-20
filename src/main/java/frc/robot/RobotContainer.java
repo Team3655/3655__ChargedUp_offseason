@@ -18,7 +18,6 @@ import frc.lib.TractorToolbox.TractorParts.PathBuilder;
 import frc.robot.Constants.ArmConstants.kArmPoses;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ArmPoseCommand;
-import frc.robot.commands.ArmSwitchCommand;
 import frc.robot.commands.FloorIntakeCommand;
 import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.commands.TurnCommand;
@@ -139,10 +138,16 @@ public class RobotContainer {
 		programmerController.y().onTrue(new ArmPoseCommand(kArmPoses.TUCKED));
 
 		// Switches sides of the robot
-		operatorController.button(18).onTrue(new ArmSwitchCommand());
+		// operatorController.button(18).onTrue(new ArmSwitchCommand());
+
+		// Zeroig Commands
+		operatorController.button(17).onTrue(armSubsystem.setMinorArmZeroCommand(-20));
+		operatorController.button(19).onTrue(armSubsystem.setMinorArmZeroCommand(20));
+		operatorController.button(18).onTrue(armSubsystem.setMinorArmZeroCommand(-10));
+		operatorController.button(20).onTrue(armSubsystem.setMinorArmZeroCommand(10));
 
 		operatorController.button(11).onTrue(armSubsystem.toggleArmMotors());
-		operatorController.button(13).onTrue(armSubsystem.zeroArms());
+		operatorController.button(13).onTrue(armSubsystem.zeroArmsCommand());
 		// endregion
 
 		// Sucking is set to be the defaut state of the intake
@@ -172,6 +177,7 @@ public class RobotContainer {
 		// region Drive Commands
 		driveJoystick.button(11).onTrue(new InstantCommand(() -> driveSubsystem.zeroHeading()));
 		driveJoystick.button(12).onTrue(driveSubsystem.toggleFieldCentric());
+		driveJoystick.button(7).onTrue(new InstantCommand(() -> driveSubsystem.updateOffsets()));
 
 		programmerController.button(8).onTrue(new InstantCommand(() -> driveSubsystem.zeroHeading()));
 		programmerController.button(6).onTrue(driveSubsystem.toggleFieldCentric());

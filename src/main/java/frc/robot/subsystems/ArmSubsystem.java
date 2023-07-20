@@ -2,8 +2,10 @@ package frc.robot.subsystems;
 
 import java.util.HashMap;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.ArmConstants;
@@ -141,11 +143,16 @@ public class ArmSubsystem extends SubsystemBase {
 		});
 	}
 
-	public CommandBase zeroArms() {
+	public CommandBase zeroArmsCommand() {
 		return runOnce(() -> {
 			minorArm.resetZeros();
 			majorArm.resetZeros();
 		});
+	}
+
+	public InstantCommand setMinorArmZeroCommand(double degrees) {
+		double radians = Units.degreesToRadians(degrees);
+		return new InstantCommand(() -> minorArm.setPosition(radians));
 	}
 
 	// endregion

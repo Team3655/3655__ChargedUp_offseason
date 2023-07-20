@@ -6,6 +6,7 @@ package frc.robot.commands.Autonomous;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.AutoConstants;
@@ -49,13 +50,26 @@ public class BalanceCommand extends CommandBase {
 		double driveOutput = 0;
 
 		// checks to see if the charge station is close to balanced
-		if (Math.abs(driveSubsystem.getRoll()) + Math.abs(driveSubsystem.getPitch()) > AutoConstants.kBalnaceCommandDeadbandDeg) {
+		if (Math.abs(driveSubsystem.getPitch()) > AutoConstants.kBalnaceCommandDeadbandDeg) {
 			// sets driveoutput to the output of the pid controller if the station is not balanced 
 			driveOutput = drivePIDController.calculate(driveSubsystem.getPitch(), 0);
+
+			if (Math.abs(driveSubsystem.getHeading()) > 90) {
+				driveSubsystem.codeDrive(-driveOutput, 0, 0);
+			} else {
+				driveSubsystem.codeDrive(driveOutput, 0, 0);
+			} 
+
+		} else { 
+			driveSubsystem.codeDrive(0, .001, 0);
 		}
 
+		SmartDashboard.putNumber("Balance Drive Output", driveOutput);
+
+
+
 		// add strafe output here to have the robot strafe while balancing
-		driveSubsystem.codeDrive(-driveOutput, 0, 0);
+		
 	}
 
 	// Called once the command ends or is interrupted.
