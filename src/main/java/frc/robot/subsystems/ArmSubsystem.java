@@ -96,8 +96,8 @@ public class ArmSubsystem extends SubsystemBase {
 		SmartDashboard.putNumber("major left real theta", majorArm.getLeftRealTheta());
 		SmartDashboard.putNumber("major right real theta", majorArm.getRightRealTheta());
 
-		SmartDashboard.putNumber("major left real theta", majorArm.getLeftRealTheta());
-		SmartDashboard.putNumber("major right real theta", majorArm.getRightRealTheta());
+		SmartDashboard.putNumber("minor left real theta", minorArm.getLeftRealTheta());
+		SmartDashboard.putNumber("minor right real theta", minorArm.getRightRealTheta());
 
 		SmartDashboard.putNumber("major power draw: ", majorArm.getPowerDraw());
 		SmartDashboard.putNumber("minor power draw: ", minorArm.getPowerDraw());

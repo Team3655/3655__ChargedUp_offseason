@@ -52,7 +52,7 @@ public final class Constants {
 			public static final double kWheelCircumference = Units.inchesToMeters(4) * Math.PI;
 
 			// The max speeds the modules are capable of
-			public static final double kMaxModuleAccelMetersPerSecond = 4;
+			public static final double kMaxModuleAccelMetersPerSecond = 5;
 			public static final double kMaxModuleSpeedMetersPerSecond = 5.35;
 
 			// Retune feedforward values for turning
@@ -232,17 +232,17 @@ public final class Constants {
 		public static final int kRightMinorArmPort = 32;
 		public static final int kLeftMinorArmPort = 33;
 
-		public static final int kMajorArmGearBoxRatio = 100;
-		public static final int kMinorArmGearBoxRatio = 100;
+		public static final double kMajorArmGearBoxRatio = 100;
+		public static final double kMinorArmGearBoxRatio = 100;
 
-		public static final int kMajorArmBeltRatio = 2 / 1;
-		public static final int kMinorArmBeltRatio = 1;
+		public static final double kMajorArmBeltRatio = 2d / 1d;
+		public static final double kMinorArmBeltRatio = 115d / 70d;
 
 		/**
 		 * the total number of motor rotations for one 360 degree rotation of the arm
 		 */
-		public static final int kMajorArmTicks = kMajorArmGearBoxRatio * kMajorArmBeltRatio;
-		public static final int kMinorArmTicks = kMinorArmGearBoxRatio * kMinorArmBeltRatio;
+		public static final double kMajorArmTicks = kMajorArmGearBoxRatio * kMajorArmBeltRatio;
+		public static final double kMinorArmTicks = kMinorArmGearBoxRatio * kMinorArmBeltRatio;
 
 		/**
 		 * The radius of each arms rotation in inches (from center of rotation to next
@@ -260,10 +260,10 @@ public final class Constants {
 		public static final double kMinorPIDOutputLimit = 1;
 
 		public static final double kMaxMajorVelRadiansPerSec = (Math.PI * 10) * 60;
-		public static final double kMaxMajorAccelRadiansPerSec = (Math.PI * 6.25 * 60);
+		public static final double kMaxMajorAccelRadiansPerSec = (Math.PI * 6.25) * 60;
 
-		public static final double kMaxMinorVelRadiansPerSec = (Math.PI * 8) * 60;
-		public static final double kMaxMinorAccelRadiansPerSec = (Math.PI * 7) * 60;
+		public static final double kMaxMinorVelRadiansPerSec = (Math.PI * 10) * 60;
+		public static final double kMaxMinorAccelRadiansPerSec = (Math.PI * 8) * 60;
 
 		// angle limits for the arms
 		public static final double kMajorArmConstraints = 110;
@@ -292,7 +292,7 @@ public final class Constants {
 				put(kArmPoses.TUCKED, new double[] { 0, 0 });
 				put(kArmPoses.LOW_SCORE, new double[] { 0, 80 });
 				put(kArmPoses.MID_SCORE, new double[] { 20, 36 });
-				put(kArmPoses.HIGH_SCORE, new double[] { 100, 55 });
+				put(kArmPoses.HIGH_SCORE, new double[] { 100, 75 });
 				put(kArmPoses.LOW_INTAKE, new double[] { -10, 98 });
 				put(kArmPoses.MID_INTAKE, new double[] { 13, 33 });
 				put(kArmPoses.HIGH_INTAKE, new double[] { 105, 87 });

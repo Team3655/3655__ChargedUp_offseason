@@ -63,10 +63,10 @@ public class ArmSegment {
 		leftEncoder = leftMotor.getEncoder();
 
 		// Tells the motors to automatically convert degrees to rotations
-		rightEncoder.setPositionConversionFactor((2 * Math.PI) / gearRatio);
-		leftEncoder.setPositionConversionFactor((2 * Math.PI) / gearRatio);
-		rightEncoder.setVelocityConversionFactor((2 * Math.PI) / gearRatio);
-		leftEncoder.setVelocityConversionFactor((2 * Math.PI) / gearRatio);
+		rightEncoder.setPositionConversionFactor((2d * Math.PI) / gearRatio);
+		leftEncoder.setPositionConversionFactor((2d * Math.PI) / gearRatio);
+		rightEncoder.setVelocityConversionFactor((2d * Math.PI) / gearRatio);
+		leftEncoder.setVelocityConversionFactor((2d * Math.PI) / gearRatio);
 
 		/**
 		 * In order to use PID functionality for a controller, a SparkMaxPIDController
@@ -74,6 +74,7 @@ public class ArmSegment {
 		 * CANSparkMax object
 		 */
 		rightPIDController = rightMotor.getPIDController();
+		rightPIDController.setFeedbackDevice(rightEncoder);
 
 		// tells the pid controller on the arms to use trapezoidal constraints 
 		rightPIDController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
