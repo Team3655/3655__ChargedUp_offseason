@@ -177,21 +177,9 @@
   "isReversed": null,
   "markers": [
     {
-      "position": 0.01,
-      "names": [
-        "ToggleSide"
-      ]
-    },
-    {
       "position": 0.02,
       "names": [
         "IntakeDown"
-      ]
-    },
-    {
-      "position": 1.01,
-      "names": [
-        "ToggleSide"
       ]
     },
     {
@@ -201,21 +189,9 @@
       ]
     },
     {
-      "position": 2.01,
-      "names": [
-        "ToggleSide"
-      ]
-    },
-    {
       "position": 2.02,
       "names": [
         "IntakeDown"
-      ]
-    },
-    {
-      "position": 3.05,
-      "names": [
-        "ToggleSide"
       ]
     },
     {
