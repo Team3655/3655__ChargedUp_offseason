@@ -18,6 +18,7 @@ import frc.lib.TractorToolbox.TractorParts.PathBuilder;
 import frc.robot.Constants.ArmConstants.kArmPoses;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ArmPoseCommand;
+import frc.robot.commands.ArmSwitchCommand;
 import frc.robot.commands.FloorIntakeCommand;
 import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.commands.TurnCommand;
@@ -123,12 +124,12 @@ public class RobotContainer {
 		// region Arm Commands
 		// Schedule ArmPoseCommand when operator presses coresponding button.
 		// scoring commands
-		operatorController.button(1).onTrue(new FloorIntakeCommand(false));
+		operatorController.button(1).onTrue(new ArmPoseCommand(kArmPoses.LOW_SCORE));
 		operatorController.button(2).onTrue(new ArmPoseCommand(kArmPoses.MID_SCORE));
 		operatorController.button(3).onTrue(new ArmPoseCommand(kArmPoses.HIGH_SCORE));
 
 		// intaking commands
-		operatorController.button(6).onTrue(new FloorIntakeCommand(true));
+		operatorController.button(6).onTrue(new ArmPoseCommand(kArmPoses.LOW_INTAKE));
 		operatorController.button(7).onTrue(new ArmPoseCommand(kArmPoses.MID_INTAKE));
 		operatorController.button(8).onTrue(new ArmPoseCommand(kArmPoses.HIGH_INTAKE));
 		programmerController.b().onTrue(new FloorIntakeCommand(true));
@@ -138,7 +139,7 @@ public class RobotContainer {
 		programmerController.y().onTrue(new ArmPoseCommand(kArmPoses.TUCKED));
 
 		// Switches sides of the robot
-		// operatorController.button(18).onTrue(new ArmSwitchCommand());
+		operatorController.button(24).onTrue(new ArmSwitchCommand());
 
 		// Zeroig Commands
 		operatorController.button(17).onTrue(armSubsystem.setMinorArmZeroCommand(-20));
