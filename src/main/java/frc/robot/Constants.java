@@ -291,11 +291,11 @@ public final class Constants {
 			{
 				put(kArmPoses.TUCKED, new double[] { 0, 0 });
 				put(kArmPoses.LOW_SCORE, new double[] { 0, 80 });
-				put(kArmPoses.MID_SCORE, new double[] { 20, 36 });
+				put(kArmPoses.MID_SCORE, new double[] { 70, 60 });
 				put(kArmPoses.HIGH_SCORE, new double[] { 100, 75 });
-				put(kArmPoses.LOW_INTAKE, new double[] { -10, 98 });
+				put(kArmPoses.LOW_INTAKE, new double[] { 10, -98 });
 				put(kArmPoses.MID_INTAKE, new double[] { 13, 33 });
-				put(kArmPoses.HIGH_INTAKE, new double[] { 105, 87 });
+				put(kArmPoses.HIGH_INTAKE, new double[] { 100, 100 });
 				put(kArmPoses.DRIVER_CONTROL, new double[] { 0, 0 });
 				put(kArmPoses.KICK_FRONT, new double[] { 35, 0 });
 				put(kArmPoses.KICK_BACK, new double[] { -35, 0 });
