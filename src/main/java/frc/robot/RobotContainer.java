@@ -84,6 +84,8 @@ public class RobotContainer {
 		autoBuilder.addPath("Square");
 		autoBuilder.addPath("Cube Target Test");
 		autoBuilder.addPath("1.5 Charge Mobility");
+		autoBuilder.addPath("1+1 Bump Stop");
+		autoBuilder.addPath("Bump Stuff");
 
 		autoChooser.setDefaultOption("ScoreHigh", new IntakeCommand(true, 100)
 				.andThen(new ScoreSequence(kArmPoses.HIGH_SCORE).andThen(new ArmPoseCommand(kArmPoses.TUCKED))));
@@ -98,6 +100,8 @@ public class RobotContainer {
 		autoChooser.addOption("1+1 Human Player", autoBuilder.getPathCommand("1+1 Human Player"));
 		autoChooser.addOption("1+2 Human Player", autoBuilder.getPathCommand("1+2 Human Player"));
 		autoChooser.addOption("1+1.5 Human Player", autoBuilder.getPathCommand("1+1.5 Human Player"));
+		autoChooser.addOption("1+1 Bump Stop", autoBuilder.getPathCommand("1+1 Bump Stop"));
+		autoChooser.addOption("Bump Stuff", autoBuilder.getPathCommand("Bump Stuff"));
 
 		autoChooser.addOption("1.5 Charge Mobility",
 				autoBuilder.getPathCommand("1.5 Charge Mobility").andThen(new BalanceCommand()));

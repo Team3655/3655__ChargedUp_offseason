@@ -181,7 +181,7 @@ public final class Constants {
 					put("ScoreCubeHigh", new ScoreSequence(kArmPoses.HIGH_INTAKE));
 					put("ScoreMid", new ScoreSequence(kArmPoses.MID_SCORE));
 					put("ScoreLow", new ScoreSequence(kArmPoses.LOW_SCORE));
-					put("IntakeDown", new IntakeDownSequence());
+					put("IntakeDown", new ArmPoseCommand(kArmPoses.LOW_INTAKE));
 					put("ToggleSide", new ArmSwitchCommand());
 					put("Suck", new IntakeCommand(true, 100));
 					put("Drop", new IntakeCommand(false, 350));
