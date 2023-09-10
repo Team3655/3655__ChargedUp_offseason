@@ -119,7 +119,7 @@ public class SwerveModule {
 		followerDriveMotor.follow(leaderDriveMotor, true);
 		followerDriveMotor.setSmartCurrentLimit(swerveConstants.kDriveSmartCurrentLimit);
 
-		throughBore = followerDriveMotor.getAbsoluteEncoder(Type.kDutyCycle);
+		throughBore = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
 		throughBore.setPositionConversionFactor((2 * Math.PI));
 		// throughBore.setZeroOffset(-angleZeroOffset);
 
