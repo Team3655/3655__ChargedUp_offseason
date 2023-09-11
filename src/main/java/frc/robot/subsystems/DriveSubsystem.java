@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -36,10 +37,10 @@ public class DriveSubsystem extends SubsystemBase {
 
 	private final double pitchOffset;
 
-	private final SwerveModule frontLeft;
-	private final SwerveModule frontRight;
-	private final SwerveModule backLeft;
-	private final SwerveModule backRight;
+	private SwerveModule frontLeft;
+	private SwerveModule frontRight;
+	private SwerveModule backLeft;
+	private SwerveModule backRight;
 
 	private SwerveModulePosition[] swervePositions;
 
@@ -55,6 +56,8 @@ public class DriveSubsystem extends SubsystemBase {
 
 	/** Creates a new DriveSubsystem. */
 	public DriveSubsystem() {
+
+		Timer.delay(5);
 
 		frontLeft = new SwerveModule(
 				"FL",
@@ -84,7 +87,7 @@ public class DriveSubsystem extends SubsystemBase {
 				ModuleConstants.kModuleTurningGains,
 				ModuleConstants.kModuleDriveGains);
 
-		updateOffsets();
+		// updateOffsets();
 
 		swervePositions = new SwerveModulePosition[] {
 				frontLeft.getPosition(),
@@ -247,14 +250,16 @@ public class DriveSubsystem extends SubsystemBase {
 		posEstimator.update(gyro.getRotation2d(), swervePositions);
 
 		// if (LimelightHelpers.getTV("")
-		// 		&& LimelightHelpers.getCurrentPipelineIndex("") == LimelightConstants.kApriltagPipeline) {
-		// 	Pose2d llPose2d = LimelightHelpers.getBotPose2d_wpiRed("");
-		// 	double latency = Units.millisecondsToSeconds(
-		// 			LimelightHelpers.getLatency_Capture("") - LimelightHelpers.getLatency_Pipeline(""));
-		// 	double timeStamp = Timer.getFPGATimestamp() - latency;
-		// 	posEstimator.addVisionMeasurement(
-		// 			llPose2d,
-		// 			timeStamp);
+		// && LimelightHelpers.getCurrentPipelineIndex("") ==
+		// LimelightConstants.kApriltagPipeline) {
+		// Pose2d llPose2d = LimelightHelpers.getBotPose2d_wpiRed("");
+		// double latency = Units.millisecondsToSeconds(
+		// LimelightHelpers.getLatency_Capture("") -
+		// LimelightHelpers.getLatency_Pipeline(""));
+		// double timeStamp = Timer.getFPGATimestamp() - latency;
+		// posEstimator.addVisionMeasurement(
+		// llPose2d,
+		// timeStamp);
 		// }
 
 		field.setRobotPose(odometry.getPoseMeters());
@@ -281,13 +286,6 @@ public class DriveSubsystem extends SubsystemBase {
 		frontRight.stopMotors();
 		backLeft.stopMotors();
 		backRight.stopMotors();
-	}
-
-	public void updateOffsets() {
-		frontLeft.attemptAgnleOffset();
-		frontRight.attemptAgnleOffset();
-		backLeft.attemptAgnleOffset();
-		backRight.attemptAgnleOffset();
 	}
 
 	public void updateTelemetry() {

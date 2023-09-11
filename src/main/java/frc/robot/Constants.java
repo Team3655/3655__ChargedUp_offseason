@@ -39,7 +39,7 @@ public final class Constants {
 
 		// gains set for R1 SDS mk4i using dual neo motors
 		public static final PIDGains kModuleDriveGains = new PIDGains(.075, 0, 0);
-		public static final PIDGains kModuleTurningGains = new PIDGains(1.5, 0.002, 0.0016);
+		public static final PIDGains kModuleTurningGains = new PIDGains(.5, 0, 0.0);
 
 		public static final class GenericModuleConstants {
 			// Current limits for the wheels
@@ -78,7 +78,7 @@ public final class Constants {
 			public static final int kLeaderDriveMotorID = 11;
 			public static final int kFollowerDriveMotorID = 12;
 			// public static final int kAbsoluteEncoderID = 9;
-			public static final double kAngleOffset = 0;
+			public static final double kAngleOffset = 26.325;
 			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
 					// kAbsoluteEncoderID,
 					kTurningMotorID,
@@ -92,7 +92,7 @@ public final class Constants {
 			public static final int kLeaderDriveMotorID = 14;
 			public static final int kFollowerDriveMotorID = 15;
 			// public static final int kAbsoluteEncoderID = 10;
-			public static final double kAngleOffset = 0;
+			public static final double kAngleOffset = 311.163;
 			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
 					// kAbsoluteEncoderID,
 					kTurningMotorID,
@@ -106,7 +106,7 @@ public final class Constants {
 			public static final int kLeaderDriveMotorID = 17;
 			public static final int kFollowerDriveMotorID = 18;
 			// public static final int kAbsoluteEncoderID = 11;
-			public static final double kAngleOffset = 0;
+			public static final double kAngleOffset = 31.957;
 			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
 					// kAbsoluteEncoderID,
 					kTurningMotorID,
@@ -120,7 +120,7 @@ public final class Constants {
 			public static final int kLeaderDriveMotorID = 20;
 			public static final int kFollowerDriveMotorID = 21;
 			// public static final int kAbsoluteEncoderID = 12;
-			public static final double kAngleOffset = 0;
+			public static final double kAngleOffset = 44.571;
 			public static final SwerveModuleConstants kModuleConstants = new SwerveModuleConstants(
 					// kAbsoluteEncoderID,
 					kTurningMotorID,
@@ -133,7 +133,7 @@ public final class Constants {
 	public static class DriveConstants {
 
 		public static final double kMaxSneakMetersPerSecond = 1.0;
-		public static final double kMaxSpeedMetersPerSecond = 5.5;
+		public static final double kMaxSpeedMetersPerSecond = 4;
 
 		// this sets turning speed (keep this low) KsKs
 		public static final double kMaxRPM = 8;

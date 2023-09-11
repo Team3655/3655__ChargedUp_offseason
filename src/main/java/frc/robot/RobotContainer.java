@@ -178,7 +178,6 @@ public class RobotContainer {
 		// region Drive Commands
 		driveJoystick.button(11).onTrue(new InstantCommand(() -> driveSubsystem.zeroHeading()));
 		driveJoystick.button(12).onTrue(driveSubsystem.toggleFieldCentric());
-		driveJoystick.button(7).onTrue(new InstantCommand(() -> driveSubsystem.updateOffsets()));
 
 		programmerController.button(8).onTrue(new InstantCommand(() -> driveSubsystem.zeroHeading()));
 		programmerController.button(6).onTrue(driveSubsystem.toggleFieldCentric());
